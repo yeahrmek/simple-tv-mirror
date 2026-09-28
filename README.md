@@ -1,3 +1,9 @@
+# simple-tv-mirror
+
+Приёмник AirPlay для Яндекс ТВ Станции: трансляция экрана мака на телевизор встроенным «Повтором экрана». Форк [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server) с упором на стабильность соединения. План — [docs/plan.md](docs/plan.md).
+
+---
+
 # AirPlay Receiver for Android
 
 [![Stars](https://img.shields.io/github/stars/jqssun/android-airplay-server)](https://github.com/jqssun/android-airplay-server)
