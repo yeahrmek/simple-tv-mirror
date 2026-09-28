@@ -5,8 +5,6 @@ env:
 
 on:
   push:
-    branches:
-      - "release/**"
     tags:
       - "v*.*.*"
   workflow_dispatch:
@@ -47,7 +45,7 @@ jobs:
           echo ${{ secrets.STORE }} | base64 -d > upload.jks
           echo ${{ secrets.LOCAL }} | base64 -d > local.properties
           chmod +x ./gradlew;
-          ./gradlew assembleRelease bundleRelease --stacktrace
+          ./gradlew assembleRelease --stacktrace
           rm upload.jks local.properties
 
       - name: Publish (GitHub)
@@ -56,6 +54,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: v${{ env.version }}
           tag_name: v${{ env.version }}
-          files: |
-            ${{ env.main_project_module }}/build/outputs/apk/release/app-release.apk
-            ${{ env.main_project_module }}/build/outputs/bundle/release/app-release.aab
+          files: ${{ env.main_project_module }}/build/outputs/apk/release/app-release.apk

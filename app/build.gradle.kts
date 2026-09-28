@@ -31,11 +31,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.jqssun.airplay"
+        applicationId = "io.github.yeahrmek.simpletvmirror"
         minSdk = 24
         targetSdk = 36
-        versionCode = 31
-        versionName = "0.0.31"
+        versionCode = 1
+        versionName = "0.1.0"
 
         externalNativeBuild {
             cmake {
