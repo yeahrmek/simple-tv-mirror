@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.media.app.NotificationCompat as MediaNotificationCompat
+import io.github.jqssun.airplay.AirPlayApp
 import io.github.jqssun.airplay.MainActivity
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
@@ -186,12 +187,16 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
             value?.invoke(_lastPin)
         }
 
+    private val events by lazy { (application as AirPlayApp).events }
+
     private fun log(msg: String) {
         Log.i(TAG, msg)
+        events.write(msg)
         logCallback?.invoke(msg)
     }
 
     override fun onLog(msg: String) {
+        events.write("native $msg")
         logCallback?.invoke(msg)
     }
 
@@ -207,6 +212,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
 
     override fun onCreate() {
         super.onCreate()
+        events.write("service create")
         createNotificationChannel()
         dacpController = DacpController(this)
         dacpPlayer = DacpPlayer(
@@ -330,6 +336,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        events.write("service start action=${intent?.action} flags=$flags")
         if (intent?.action == ACTION_START_SERVER) {
             promoteToForeground()
             val name = prefs.getString(Prefs.SERVER_NAME, Prefs.DEF_SERVER_NAME) ?: Prefs.DEF_SERVER_NAME
@@ -350,7 +357,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "airplay:server").apply { acquire() }
 
-        nsdManager = NsdServiceManager(this).apply { acquireMulticastLock() }
+        nsdManager = NsdServiceManager(this, ::log).apply { acquireMulticastLock() }
 
         val hwAddr = getHwAddr()
         val keyFile = filesDir.resolve("airplay.pem").absolutePath
@@ -578,7 +585,13 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         log(message)
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        events.write("task removed")
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
+        events.write("service destroy")
         stopServer()
         dacpPlayer.release()
         mediaReceiver?.let {
